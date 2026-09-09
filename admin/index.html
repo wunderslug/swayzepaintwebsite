@@ -1,80 +1,14 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Portfolio Manager | Swayze Painting</title>
-  <link rel="stylesheet" href="/assets/css/site.css">
-  <style>
-    .manager{max-width:720px;margin:0 auto;padding:32px 20px 64px}.manager h1{margin-bottom:8px}.manager-card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:22px;margin-top:24px;box-shadow:0 8px 30px rgba(0,0,0,.05)}.manager label{display:block;font-weight:700;margin:18px 0 7px}.manager input,.manager select{width:100%;box-sizing:border-box;padding:13px;border:1px solid #bbb;border-radius:9px;font:inherit;background:#fff}.manager button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:9px;font:inherit;font-weight:700;cursor:pointer}.manager button:disabled{opacity:.55;cursor:wait}.status{margin-top:18px;padding:13px;border-radius:9px;background:#f2f2f2;display:none}.status.ok{display:block;background:#e7f4e8}.status.error{display:block;background:#f9e6e6}.preview{display:none;margin-top:16px}.preview img{max-width:100%;max-height:360px;border-radius:10px;object-fit:contain;background:#eee}.hint{opacity:.72;font-size:.92rem}.key{font-family:monospace;word-break:break-all}
-  </style>
-</head>
-<body>
-  <main class="manager">
-    <p class="hint">Swayze Painting &amp; Fine Finish</p>
-    <h1>Portfolio Manager</h1>
-    <p>Upload a project photo directly to the portfolio media bucket.</p>
-
-    <form id="uploadForm" class="manager-card">
-      <label for="project">Project name</label>
-      <input id="project" name="project" required placeholder="Pomfret kitchen cabinets">
-
-      <label for="role">Photo type</label>
-      <select id="role" name="role" required>
-        <option value="before">Before</option>
-        <option value="after">After</option>
-        <option value="detail">Detail</option>
-      </select>
-
-      <label for="file">Photo</label>
-      <input id="file" name="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif" required>
-      <p class="hint">JPEG, PNG, WebP or AVIF. Maximum 15 MB.</p>
-
-      <div id="preview" class="preview"><img id="previewImage" alt="Selected photo preview"></div>
-      <button id="submitButton" type="submit">Upload photo</button>
-      <div id="status" class="status" role="status"></div>
-    </form>
-  </main>
-
-<script>
-const form=document.getElementById('uploadForm');
-const fileInput=document.getElementById('file');
-const preview=document.getElementById('preview');
-const previewImage=document.getElementById('previewImage');
-const statusBox=document.getElementById('status');
-const button=document.getElementById('submitButton');
-let previewUrl;
-
-fileInput.addEventListener('change',()=>{
-  if(previewUrl) URL.revokeObjectURL(previewUrl);
-  const file=fileInput.files[0];
-  if(!file){preview.style.display='none';return;}
-  previewUrl=URL.createObjectURL(file);
-  previewImage.src=previewUrl;
-  preview.style.display='block';
-});
-
-form.addEventListener('submit',async(event)=>{
-  event.preventDefault();
-  statusBox.className='status';
-  statusBox.style.display='block';
-  statusBox.textContent='Uploading…';
-  button.disabled=true;
-  try{
-    const response=await fetch('/api/media/upload',{method:'POST',body:new FormData(form)});
-    const result=await response.json();
-    if(!response.ok||!result.ok) throw new Error(result.error||'Upload failed.');
-    statusBox.className='status ok';
-    statusBox.innerHTML='Upload complete.<br><span class="key">'+escapeHtml(result.key)+'</span>';
-    fileInput.value='';
-    preview.style.display='none';
-  }catch(error){
-    statusBox.className='status error';
-    statusBox.textContent=error.message||'Upload failed.';
-  }finally{button.disabled=false;}
-});
-
-function escapeHtml(value){const d=document.createElement('div');d.textContent=value;return d.innerHTML;}
-</script>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Project Manager | Swayze Painting</title><link rel="stylesheet" href="/assets/css/site.css"><style>
+.manager{max-width:760px;margin:auto;padding:30px 18px 70px}.card{background:#fff;border:1px solid #ddd;border-radius:16px;padding:22px;margin:22px 0;box-shadow:0 8px 30px rgba(0,0,0,.05)}label{display:block;font-weight:700;margin:16px 0 7px}input,select,textarea{width:100%;box-sizing:border-box;padding:13px;border:1px solid #bbb;border-radius:9px;font:inherit;background:#fff}textarea{min-height:110px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.btn{width:100%;padding:14px;border:0;border-radius:9px;font:inherit;font-weight:700;cursor:pointer;margin-top:18px}.secondary{background:#eee}.status{display:none;margin-top:15px;padding:12px;border-radius:9px}.ok{display:block;background:#e7f4e8}.error{display:block;background:#f9e6e6}.photos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}.photo{position:relative;background:#eee;border-radius:10px;overflow:hidden}.photo img{width:100%;height:150px;object-fit:cover;display:block}.photo span{display:block;padding:8px;font-size:.85rem}.photo button{position:absolute;right:6px;top:6px;border:0;border-radius:50%;width:30px;height:30px}.hint{opacity:.7;font-size:.92rem}.publish{display:flex;gap:10px;align-items:center;margin-top:18px}.publish input{width:auto}.publish label{margin:0}.project-list article{padding:14px 0;border-top:1px solid #ddd}.project-list article:first-child{border-top:0}@media(max-width:560px){.grid{grid-template-columns:1fr}.photos{grid-template-columns:1fr 1fr}}
+</style></head><body><main class="manager"><p class="hint">Swayze Painting &amp; Fine Finish</p><h1>Project Manager</h1><p>Create a project, add its photos, then publish when it's ready.</p>
+<form id="projectForm" class="card"><label for="title">Project title</label><input id="title" required placeholder="Putnam Garage Door"><div class="grid"><div><label for="location">Location</label><input id="location" placeholder="Putnam, CT"></div><div><label for="service">Service</label><select id="service"><option>Cabinet Refinishing</option><option>Interior Painting</option><option>Trim & Doors</option><option>Deck Refinishing</option><option>Specialty Finish</option><option>Other</option></select></div></div><label for="description">Description</label><textarea id="description" placeholder="What was done on this project?"></textarea>
+<div class="card" style="box-shadow:none"><h2>Photos</h2><div class="grid"><div><label for="role">Photo type</label><select id="role"><option value="before">Before</option><option value="after">After</option><option value="detail">Detail</option></select></div><div><label for="file">Choose photo</label><input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/avif"></div></div><button id="upload" class="btn secondary" type="button">Add photo</button><div id="uploadStatus" class="status"></div><div id="photos" class="photos"></div></div>
+<div class="publish"><input id="published" type="checkbox"><label for="published">Publish to website</label></div><button class="btn" type="submit">Save project</button><div id="saveStatus" class="status"></div></form>
+<section class="card"><h2>Saved projects</h2><div id="projectList" class="project-list"><p class="hint">Loading…</p></div></section></main><script>
+const photos=[],$=id=>document.getElementById(id);function esc(v){const d=document.createElement('div');d.textContent=v||'';return d.innerHTML}function slug(v){return(v||'project').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'')||'project'}function mediaUrl(key){return'/api/media/file/'+key.split('/').map(encodeURIComponent).join('/')}
+function renderPhotos(){ $('photos').innerHTML=photos.map((p,i)=>`<div class="photo"><img src="${mediaUrl(p.key)}" alt=""><button type="button" data-remove="${i}">×</button><span>${esc(p.role)}</span></div>`).join('');document.querySelectorAll('[data-remove]').forEach(b=>b.onclick=()=>{photos.splice(+b.dataset.remove,1);renderPhotos()})}
+$('upload').onclick=async()=>{const file=$('file').files[0];if(!file){show('uploadStatus','Choose a photo first.','error');return}const fd=new FormData();fd.append('file',file);fd.append('project',slug($('title').value));fd.append('role',$('role').value);$('upload').disabled=true;show('uploadStatus','Uploading…','');try{const r=await fetch('/api/media/upload',{method:'POST',body:fd}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Upload failed.');photos.push({key:j.key,role:$('role').value});$('file').value='';renderPhotos();show('uploadStatus','Photo added.','ok')}catch(e){show('uploadStatus',e.message,'error')}finally{$('upload').disabled=false}}
+$('projectForm').onsubmit=async e=>{e.preventDefault();const data={title:$('title').value,location:$('location').value,service:$('service').value,description:$('description').value,published:$('published').checked,photos};show('saveStatus','Saving…','');try{const r=await fetch('/api/projects',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(data)}),j=await r.json();if(!r.ok||!j.ok)throw Error(j.error||'Save failed.');show('saveStatus',j.project.published?'Project saved and published.':'Project saved as a draft.','ok');photos.length=0;renderPhotos();e.target.reset();loadProjects()}catch(err){show('saveStatus',err.message,'error')}};
+function show(id,msg,type){const e=$(id);e.textContent=msg;e.className='status '+type;e.style.display='block'}async function loadProjects(){try{const r=await fetch('/api/projects'),j=await r.json();if(!j.ok)throw Error();$('projectList').innerHTML=j.projects.length?j.projects.map(p=>`<article><strong>${esc(p.title)}</strong><br><span class="hint">${esc(p.location)} · ${esc(p.service)} · ${p.photos.length} photo${p.photos.length===1?'':'s'} · ${p.published?'Published':'Draft'}</span></article>`).join(''):'<p class="hint">No saved projects yet.</p>'}catch{$('projectList').innerHTML='<p class="hint">Could not load projects.</p>'}}loadProjects();
+</script></body></html>
