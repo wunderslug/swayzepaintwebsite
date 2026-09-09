@@ -1,0 +1,53 @@
+const MAX_FILE_SIZE = 15 * 1024 * 1024;
+const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/avif']);
+
+function json(data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }
+  });
+}
+
+function slugify(value) {
+  return String(value || 'project')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'project';
+}
+
+function extensionFor(file) {
+  const map = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif' };
+  return map[file.type] || 'bin';
+}
+
+export async function onRequestPost(context) {
+  try {
+    if (!context.env.MEDIA_BUCKET) return json({ ok: false, error: 'MEDIA_BUCKET binding is unavailable.' }, 500);
+
+    const form = await context.request.formData();
+    const file = form.get('file');
+    const project = slugify(form.get('project'));
+    const role = slugify(form.get('role') || 'photo');
+
+    if (!(file instanceof File)) return json({ ok: false, error: 'Choose an image to upload.' }, 400);
+    if (!ALLOWED_TYPES.has(file.type)) return json({ ok: false, error: 'Use JPEG, PNG, WebP, or AVIF images.' }, 415);
+    if (file.size < 1 || file.size > MAX_FILE_SIZE) return json({ ok: false, error: 'Image must be 15 MB or smaller.' }, 413);
+
+    const id = crypto.randomUUID();
+    const key = `projects/${project}/${role}-${id}.${extensionFor(file)}`;
+
+    await context.env.MEDIA_BUCKET.put(key, file.stream(), {
+      httpMetadata: { contentType: file.type, cacheControl: 'public, max-age=31536000, immutable' },
+      customMetadata: { project, role, uploadedAt: new Date().toISOString() }
+    });
+
+    return json({ ok: true, key, size: file.size, type: file.type });
+  } catch (error) {
+    return json({ ok: false, error: 'Upload failed.', detail: String(error?.message || error) }, 500);
+  }
+}
+
+export function onRequestGet() {
+  return json({ ok: true, endpoint: 'portfolio-media-upload', accepts: ['image/jpeg', 'image/png', 'image/webp', 'image/avif'], maxBytes: MAX_FILE_SIZE });
+}
